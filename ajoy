@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>System Breach</title>
+<style>
+  body {
+    margin: 0;
+    font-family: monospace;
+    background: black;
+    color: #00ff00;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  #message {
+    font-size: 22px;
+    text-align: center;
+  }
+
+  #cameraScreen {
+    display: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: black;
+    color: white;
+  }
+
+  #video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1); /* mirror front camera */
+  }
+
+  .face-box {
+    position: absolute;
+    border: 2px solid red;
+    width: 100px;
+    height: 100px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  #flash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  #rec {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: red;
+    font-size: 18px;
+  }
+
+  #timer {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 18px;
+  }
+</style>
+</head>
+
+<body>
+<div id="message">Initializing system...</div>
+
+<div id="cameraScreen">
+  <video id="video" autoplay muted></video>
+  <div class="face-box"></div>
+  <div id="rec">REC</div>
+  <div id="timer">00:00</div>
+  <div id="flash"></div>
+</div>
+
+<script>
+let msg = document.getElementById("message");
+let camScreen = document.getElementById("cameraScreen");
+let video = document.getElementById("video");
+let timerEl = document.getElementById("timer");
+let flash = document.getElementById("flash");
+
+let seconds = 0;
+
+// fake timer
+function startTimer() {
+  let interval = setInterval(() => {
+    seconds++;
+    let min = String(Math.floor(seconds / 60)).padStart(2,'0');
+    let sec = String(seconds % 60).padStart(2,'0');
+    timerEl.textContent = min + ":" + sec;
+  }, 1000);
+}
+
+// flash effect
+function flashEffect() {
+  flash.style.opacity = 1;
+  setTimeout(() => { flash.style.opacity = 0; }, 100);
+}
+
+// start camera
+function startCamera() {
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+    .then(stream => {
+      video.srcObject = stream;
+      camScreen.style.display = "block";
+      msg.style.display = "none";
+      startTimer();
+
+      // simulate taking photo after 3 seconds
+      setTimeout(() => { flashEffect(); }, 3000);
+
+      // end prank after 7 seconds
+      setTimeout(() => {
+        camScreen.style.display = "none";
+        document.body.style.background = "white";
+        msg.style.display = "block";
+        msg.style.color = "black";
+        msg.innerHTML = "😂 APRIL FOOL!😂😂 ";
+        stream.getTracks().forEach(track => track.stop());
+      }, 7000);
+    })
+    .catch(err => {
+      msg.textContent = "Camera access denied!";
+      console.error(err);
+    });
+}
+
+// sequence
+setTimeout(() => { msg.textContent = "Accessing camera..."; }, 1500);
+setTimeout(() => { msg.textContent = "Camera access granted!"; }, 3000);
+setTimeout(() => { startCamera(); }, 4500);
+
+</script>
+</body>
+</html>
